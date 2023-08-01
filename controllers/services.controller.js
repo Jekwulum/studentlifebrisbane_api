@@ -1,5 +1,6 @@
 const config = process.env;
 const sendMailService = require('../middlewares/email.service');
+const emailTemplate = require('../middlewares/email.template');
 const validator = require('../middlewares/validators');
 const { v4: uuidv4 } = require('uuid');
 const AccomodationModel = require('../models/accommodation.model');
@@ -15,10 +16,7 @@ const ServicesController = {
     const { name, email, message } = value;
 
     try {
-      const html =
-        `<strong>Mail from ${name} with email: ${email}<strong>
-        <br>
-        <p>${message}<p>`;
+      const html = emailTemplate.htmlBody(email, name, message);
       sendMailService(html, res)
     }
     catch (err) {
