@@ -1,5 +1,5 @@
 const config = process.env;
-const { Email } = require('smtpjs');
+const sendMailService = require('../middlewares/email.service');
 const validator = require('../middlewares/validators');
 const { v4: uuidv4 } = require('uuid');
 const AccomodationModel = require('../models/accommodation.model');
@@ -13,18 +13,17 @@ const ServicesController = {
       return res.status(400).json({ status: "FAILED", message: error.details[0].message });
     }
     const { name, email, message } = value;
-    Email.send({
-      SecureToken: "b85a1106-d346-4835-97ac-b22b744fa8a3",
-      To: 'charlesnwoye2@gmail.com',
-      From: "charlesnwoye2@gmail.com",
-      Subject: `Website Email from ${name}`,
-      Body: `${message} <br> My email: ${email}`
-    }).then(() => {
-      res.status(200).json({ message: 'Email sent successfully' });
-    })
-      .catch((error) => {
-        res.status(500).json({ error: `Failed to send email: ${error.message}` });
-      });
+
+    try {
+      const html =
+        `<strong>Mail from ${name} with email: ${email}<strong>
+        <br>
+        <p>${message}<p>`;
+      sendMailService(html, res)
+    }
+    catch (err) {
+      res.status(500).json({ status: "FAILED", message: err.message });
+    }
   },
 
   getAccommodations: async (req, res) => {
@@ -57,7 +56,7 @@ const ServicesController = {
     let mydoc = await AccomodationModel.findById(req.params.id).exec();
     mydoc.resolved = true;
     await mydoc.save();
-    res.status(200).json({status: "SUCCESS", message: "Successfully updated record"});
+    res.status(200).json({ status: "SUCCESS", message: "Successfully updated record" });
   },
 
   getBookings: async (req, res) => {
@@ -90,7 +89,7 @@ const ServicesController = {
     let mydoc = await BookingModel.findById(req.params.id).exec();
     mydoc.resolved = true;
     await mydoc.save();
-    res.status(200).json({status: "SUCCESS", message: "Successfully updated record"});
+    res.status(200).json({ status: "SUCCESS", message: "Successfully updated record" });
   }
 };
 
